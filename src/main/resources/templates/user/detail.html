@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout}" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <title>Blog Detail</title>
+</head>
+<body>
+<th:block layout:fragment="content">
+    <table>
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Age</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:object="${user}">
+            <td th:text="*{id}">Id</td>
+            <td th:text="*{name}">name</td>
+            <td th:text="*{age}">age</td>
+        </tr>
+        </tbody>
+    </table>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+    <Properties>
+        <Property name="LOG_PATTERN">%clr{%date{yyyy-MM-dd HH:mm:ss.SSS}}{faint} %clr{%5level} %clr{%pid}{magenta} %clr{---}{faint} %clr{[%15.15thread]}{faint} %clr{%-40logger}{cyan} %clr{:}{faint} %m%n%xwEx</Property>
+        <Property name="LOG_PATH">logs/dev</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+        <RollingFile name="SqlLogFile" fileName="${LOG_PATH}/sql.log"
+                     filePattern="${LOG_PATH}/$${date:yyyy-MM}/sql-%d{yyyy-MM-dd}-%i.log.gz"
+                     filePermissions="rw-------">
+            <PatternLayout pattern="${LOG_PATTERN}" />
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+                <SizeBasedTriggeringPolicy size="100 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20">
+                <PosixViewAttribute basePath="${LOG_PATH}/$${date:yyyy-MM}" filePermissions="r--r--r--">
+                    <IfFileName glob="*.gz" />
+                </PosixViewAttribute>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Logger name="org.hibernate.validator.internal.util.Version" level="all" />
+        <logger name="org.seasar.doma.jdbc.UtilLoggingJdbcLogger" level="all" additivity="false">
+            <AppenderRef ref="SqlLogFile"/>
+        </logger>
+        <logger name="org.springframework" level="warn" />
+
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>

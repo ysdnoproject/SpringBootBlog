@@ -1,0 +1,102 @@
+plugins {
+    id 'org.springframework.boot' version '2.1.6.RELEASE'
+    id 'java'
+    id "io.spring.dependency-management" version "1.0.8.RELEASE"
+    id 'idea'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+configurations {
+    all {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
+    developmentOnly
+    runtimeClasspath {
+        extendsFrom developmentOnly
+    }
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    domaGenRuntime
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    implementation "org.seasar.doma:doma:2.24.0"
+    implementation('org.seasar.doma.boot:doma-spring-boot-starter:1.1.1')
+    implementation('mysql:mysql-connector-java')
+    implementation('nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.4.1')
+    implementation('org.thymeleaf.extras:thymeleaf-extras-springsecurity5')
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor "org.seasar.doma:doma:2.24.0"
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation "org.springframework.security:spring-security-test"
+    domaGenRuntime 'org.seasar.doma:doma-gen:2.24.0'
+    domaGenRuntime 'mysql:mysql-connector-java'
+}
+
+apply from: "config.gradle"
+
+// Copy the resources referred by the Doma annotation processors to
+// the destinationDir of the compileJava task
+task copyDomaResources(type: Sync)  {
+    from sourceSets.main.resources.srcDirs
+    into compileJava.destinationDir
+    include 'doma.compile.config'
+    include 'META-INF/**/*.sql'
+    include 'META-INF/**/*.script'
+}
+
+task gen {
+    group = 'doma-gen'
+    doLast {
+        ant.taskdef(resource: 'domagentask.properties',
+                classpath: configurations.domaGenRuntime.asPath)
+        ant.gen(url: rootProject.ext.domaGen.url, user: rootProject.ext.domaGen.user, password: rootProject.ext.domaGen.password) {
+            entityConfig(packageName: 'com.example.demo.doma.entity')
+            daoConfig(packageName: 'com.example.demo.doma.dao')
+            sqlConfig()
+        }
+    }
+}
+
+task genEntity {
+    group = 'doma-gen'
+    doLast {
+        ant.taskdef(resource: 'domagentask.properties',
+                classpath: configurations.domaGenRuntime.asPath)
+        ant.gen(url: rootProject.ext.domaGen.url, user: rootProject.ext.domaGen.user, password: rootProject.ext.domaGen.password) {
+            entityConfig(packageName: 'com.example.demo.doma.entity',
+                    entityName: entityName,
+                    sql: sql)
+        }
+    }
+}
+
+compileJava {
+    // Depend on the above task
+    dependsOn copyDomaResources
+    options.encoding = 'UTF-8'
+}
+
+compileTestJava {
+    options.encoding = 'UTF-8'
+    // Disable the annotation processors during the test run
+    options.compilerArgs = ['-proc:none']
+}
+
+idea.module.inheritOutputDirs = true

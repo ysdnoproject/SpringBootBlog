@@ -1,0 +1,1 @@
+select /*%expand*/* from user where name=/* username */'test' order by id

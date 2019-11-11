@@ -1,0 +1,16 @@
+import java.util.Properties
+
+def props = new Properties()
+file('src/main/resources/application-dev.properties').withInputStream {
+    props.load(it)
+}
+def url = props['spring.datasource.url']
+def user = props['spring.datasource.username']
+
+ext {
+    domaGen = [
+        url: props['spring.datasource.url'],
+        user: props['spring.datasource.username'],
+        password: props['spring.datasource.password']
+    ]
+}
